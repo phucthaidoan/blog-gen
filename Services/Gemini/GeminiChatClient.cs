@@ -29,26 +29,36 @@ public class GeminiChatClient : IChatClient
     public ChatClientMetadata Metadata => new("Gemini", new Uri("https://generativelanguage.googleapis.com"), _model);
 
     public async Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages, 
-        ChatOptions? options = null, 
+        IList<ChatMessage> chatMessages,
+        ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         // doc reference https://ai.google.dev/gemini-api/docs/quickstart#make-first-request
         // and there is a free tier for limited usage https://ai.google.dev/gemini-api/docs/pricing
         var request = CreateGeminiRequest(chatMessages, options);
         var jsonContent = JsonSerializer.Serialize(request, _jsonOptions);
-        
+
         using var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-        
+
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent")
         {
             Content = httpContent
         };
-        
+
         httpRequest.Headers.Add("x-goog-api-key", _apiKey);
 
         var httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
-        httpResponse.EnsureSuccessStatusCode();
+
+        // Enhanced error handling with API error details
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            var errorContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(
+                $"Gemini API request failed with status {(int)httpResponse.StatusCode} ({httpResponse.StatusCode}). " +
+                $"Error details: {errorContent}",
+                null,
+                httpResponse.StatusCode);
+        }
 
         var responseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
         var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent, _jsonOptions);
@@ -57,15 +67,15 @@ public class GeminiChatClient : IChatClient
     }
 
     public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages, 
-        ChatOptions? options = null, 
+        IList<ChatMessage> chatMessages,
+        ChatOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // For simplicity, we'll implement streaming by calling the non-streaming method
         // and yielding the result as a single update. A full implementation would use
         // the streaming endpoint.
         var response = await CompleteAsync(chatMessages, options, cancellationToken);
-        
+
         yield return new StreamingChatCompletionUpdate
         {
             CompletionId = response.CompletionId,
@@ -82,7 +92,7 @@ public class GeminiChatClient : IChatClient
     {
         if (serviceType == typeof(HttpClient))
             return _httpClient;
-        
+
         return null;
     }
 
@@ -94,11 +104,11 @@ public class GeminiChatClient : IChatClient
     private GeminiRequest CreateGeminiRequest(IEnumerable<ChatMessage> messages, ChatOptions? options)
     {
         var contents = new List<GeminiContent>();
-        
+
         foreach (var message in messages)
         {
             var parts = new List<GeminiPart>();
-            
+
             foreach (var content in message.Contents)
             {
                 if (content is TextContent textContent)
@@ -107,7 +117,7 @@ public class GeminiChatClient : IChatClient
                 }
                 // Add support for other content types as needed
             }
-            
+
             if (parts.Count > 0)
             {
                 contents.Add(new GeminiContent { Parts = parts });
@@ -123,16 +133,16 @@ public class GeminiChatClient : IChatClient
         if (options != null)
         {
             var generationConfig = new GeminiGenerationConfig();
-            
+
             if (options.Temperature.HasValue)
                 generationConfig.Temperature = (float)options.Temperature.Value;
-            
+
             if (options.MaxOutputTokens.HasValue)
                 generationConfig.MaxOutputTokens = options.MaxOutputTokens.Value;
-            
+
             if (options.TopP.HasValue)
                 generationConfig.TopP = (float)options.TopP.Value;
-            
+
             if (options.TopK.HasValue)
                 generationConfig.TopK = options.TopK.Value;
 
@@ -150,7 +160,7 @@ public class GeminiChatClient : IChatClient
         }
 
         var message = new ChatMessage(ChatRole.Assistant, text);
-        
+
         var usage = new UsageDetails
         {
             InputTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount,

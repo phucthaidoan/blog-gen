@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using BlogPostGenerator.Agents;
+using Polly;
 
 namespace BlogPostGenerator;
 
@@ -32,6 +33,32 @@ class Program
         // Logging
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
+
+        // Configure HttpClient with resilience policies
+        builder.Services.AddHttpClient("GeminiClient")
+            .AddStandardResilienceHandler(options =>
+            {
+                var maxRetries = builder.Configuration.GetValue<int>("GoogleAI:Resilience:MaxRetries", 3);
+                var initialBackoff = builder.Configuration.GetValue<int>("GoogleAI:Resilience:InitialBackoffSeconds", 2);
+                var timeout = builder.Configuration.GetValue<int>("GoogleAI:Resilience:TimeoutSeconds", 120);
+
+                // Retry configuration
+                options.Retry.MaxRetryAttempts = maxRetries;
+                options.Retry.Delay = TimeSpan.FromSeconds(initialBackoff);
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
+
+                // Per-attempt timeout (each retry gets this much time)
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(timeout);
+
+                // Total timeout for all retries combined
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(5); // 300s total
+
+                // Circuit breaker configuration
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(15);
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 3;
+            });
 
         // Configure IChatClient using Azure OpenAI or Google Gemini
         builder.Services.AddSingleton(serviceProvider =>
@@ -72,7 +99,8 @@ class Program
             if (!string.IsNullOrEmpty(geminiApiKey))
             {
                 logger.LogInformation("Configuring Google Gemini with model: {GeminiModelId}", geminiModelId);
-                var httpClient = new HttpClient();
+                var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient("GeminiClient");
                 return new Services.Gemini.GeminiChatClient(httpClient, geminiApiKey, geminiModelId);
             }
 
