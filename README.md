@@ -95,15 +95,15 @@ The application supports multiple AI providers with **Microsoft Agent Framework*
 ### 🚀 Google Gemini (Recommended)
 
 ```bash
-dotnet user-secrets set "GoogleGemini:ApiKey" "your-google-ai-api-key"
+dotnet user-secrets set "GoogleAI:ApiKey" "your-google-ai-api-key"
 ```
 
 Configuration in `appsettings.json`:
 
 ```json
 {
-  "GoogleGemini": {
-    "ModelId": "gemini-2.5-flash",
+  "GoogleAI": {
+    "ModelId": "gemini-3.5-flash-lite",
     "ApiKey": ""
   }
 }

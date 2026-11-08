@@ -18,25 +18,25 @@ You can configure the Google Gemini API key in several ways:
 #### Option A: User Secrets (Recommended for development)
 
 ```bash
-dotnet user-secrets set "GoogleGemini:ApiKey" "your-google-ai-api-key-here"
+dotnet user-secrets set "GoogleAI:ApiKey" "your-google-ai-api-key-here"
 ```
 
 #### Option B: Environment Variable
 
 ```bash
 # Windows PowerShell
-$env:GoogleGemini__ApiKey = "your-google-ai-api-key-here"
+$env:GoogleAI__ApiKey = "your-google-ai-api-key-here"
 
 # Linux/Mac
-export GoogleGemini__ApiKey="your-google-ai-api-key-here"
+export GoogleAI__ApiKey="your-google-ai-api-key-here"
 ```
 
 #### Option C: appsettings.json (Not recommended for production)
 
 ```json
 {
-  "GoogleGemini": {
-    "ModelId": "gemini-2.5-flash",
+  "GoogleAI": {
+    "ModelId": "gemini-3.5-flash-lite",
     "ApiKey": "your-google-ai-api-key-here"
   }
 }
@@ -46,7 +46,7 @@ export GoogleGemini__ApiKey="your-google-ai-api-key-here"
 
 You can configure different Gemini models:
 
-- `gemini-2.5-flash` (default) - Fast and efficient
+- `gemini-3.5-flash-lite` (default) - Fast, lightweight, and cost-efficient
 - `gemini-2.5-pro` - More capable but slower
 - `gemini-1.5-flash` - Previous generation fast model
 - `gemini-1.5-pro` - Previous generation pro model
@@ -55,7 +55,7 @@ You can configure different Gemini models:
 
 The application checks for AI providers in this order:
 
-1. **Google Gemini** - If `GoogleGemini:ApiKey` is configured
+1. **Google Gemini** - If `GoogleAI:ApiKey` is configured
 2. **Azure OpenAI** - If `AzureOpenAI:Endpoint` and `AzureOpenAI:ApiKey` are configured
 3. **OpenAI** - If `OpenAI:ApiKey` is configured
 
@@ -98,7 +98,7 @@ See `gemini-example-request.json` for a sample blog post request that works well
 The application will print which AI provider it's using at startup:
 
 ```text
-Configuring Google Gemini with model: gemini-2.5-flash
+Configuring Google Gemini with model: gemini-3.5-flash-lite
 ```
 
 If you see this message, Google Gemini is successfully configured and will be used for blog generation.
