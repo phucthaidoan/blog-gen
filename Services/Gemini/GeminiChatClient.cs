@@ -14,7 +14,7 @@ public class GeminiChatClient : IChatClient
     private readonly string _model;
     private readonly JsonSerializerOptions _jsonOptions;
 
-    public GeminiChatClient(HttpClient httpClient, string apiKey, string model = "gemini-2.5-flash")
+    public GeminiChatClient(HttpClient httpClient, string apiKey, string model = "gemini-3.5-flash-lite")
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));

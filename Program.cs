@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using System.ClientModel;
@@ -94,7 +94,7 @@ class Program
 
             // Try Google Gemini configuration
             var geminiApiKey = configuration["GoogleAI:ApiKey"];
-            var geminiModelId = configuration["GoogleAI:ModelId"] ?? "gemini-2.5-flash"; // list of available models https://ai.google.dev/gemini-api/docs/models
+            var geminiModelId = configuration["GoogleAI:ModelId"] ?? "gemini-3.5-flash-lite"; // list of available models https://ai.google.dev/gemini-api/docs/models
 
             if (!string.IsNullOrEmpty(geminiApiKey))
             {
