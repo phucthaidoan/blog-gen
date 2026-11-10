@@ -119,7 +119,8 @@ class Program
 
                     // Use API key authentication
                     return new AzureOpenAIClient(new Uri(azureEndpoint), new ApiKeyCredential(azureApiKey))
-                        .AsChatClient(azureDeploymentName);
+                        .GetChatClient(azureDeploymentName)
+                        .AsIChatClient();
                 }
                 else
                 {
@@ -127,7 +128,8 @@ class Program
 
                     // Use Azure CLI credentials (default)
                     return new AzureOpenAIClient(new Uri(azureEndpoint), new DefaultAzureCredential())
-                        .AsChatClient(azureDeploymentName);
+                        .GetChatClient(azureDeploymentName)
+                        .AsIChatClient();
                 }
             }
 
@@ -136,7 +138,9 @@ class Program
             if (!string.IsNullOrEmpty(openAIApiKey))
             {
                 logger.LogInformation("Configuring OpenAI");
-                return new OpenAI.OpenAIClient(openAIApiKey).AsChatClient("gpt-4o-mini");
+                return new OpenAI.OpenAIClient(openAIApiKey)
+                    .GetChatClient("gpt-4o-mini")
+                    .AsIChatClient();
             }
 
             throw new InvalidOperationException("No valid AI configuration found. Please configure Google Gemini, Azure OpenAI, or OpenAI settings.");

@@ -13,7 +13,7 @@ public class MarkdownLinterAgent : BaseAgent, IAgent
     public string Description => Constants.Agents.MarkdownLinter.Description;
 
     public MarkdownLinterAgent(IChatClient chatClient, ILogger<MarkdownLinterAgent> logger)
-        : base(chatClient, logger)
+        : base(chatClient, logger, name: Constants.Agents.MarkdownLinter.Name, description: Constants.Agents.MarkdownLinter.Description)
     {
     }
 

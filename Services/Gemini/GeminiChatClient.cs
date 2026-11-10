@@ -28,8 +28,8 @@ public class GeminiChatClient : IChatClient
 
     public ChatClientMetadata Metadata => new("Gemini", new Uri("https://generativelanguage.googleapis.com"), _model);
 
-    public async Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages,
+    public async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> chatMessages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -63,26 +63,26 @@ public class GeminiChatClient : IChatClient
         var responseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
         var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent, _jsonOptions);
 
-        return ConvertToChatCompletion(geminiResponse, options);
+        return ConvertToChatResponse(geminiResponse, options);
     }
 
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages,
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> chatMessages,
         ChatOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // For simplicity, we'll implement streaming by calling the non-streaming method
         // and yielding the result as a single update. A full implementation would use
         // the streaming endpoint.
-        var response = await CompleteAsync(chatMessages, options, cancellationToken);
+        var response = await GetResponseAsync(chatMessages, options, cancellationToken);
 
-        yield return new StreamingChatCompletionUpdate
+        yield return new ChatResponseUpdate
         {
-            CompletionId = response.CompletionId,
+            ResponseId = response.ResponseId,
             CreatedAt = response.CreatedAt,
             FinishReason = response.FinishReason,
-            Contents = response.Message.Contents,
-            Role = response.Message.Role,
+            Contents = response.Messages.FirstOrDefault()?.Contents ?? [],
+            Role = response.Messages.FirstOrDefault()?.Role,
             ModelId = response.ModelId,
             RawRepresentation = response.RawRepresentation
         };
@@ -152,7 +152,7 @@ public class GeminiChatClient : IChatClient
         return request;
     }
 
-    private ChatCompletion ConvertToChatCompletion(GeminiResponse? geminiResponse, ChatOptions? options)
+    private ChatResponse ConvertToChatResponse(GeminiResponse? geminiResponse, ChatOptions? options)
     {
         if (geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text is not string text)
         {
@@ -168,9 +168,9 @@ public class GeminiChatClient : IChatClient
             TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount
         };
 
-        return new ChatCompletion(message)
+        return new ChatResponse(message)
         {
-            CompletionId = Guid.NewGuid().ToString(),
+            ResponseId = Guid.NewGuid().ToString(),
             CreatedAt = DateTimeOffset.UtcNow,
             ModelId = _model,
             FinishReason = ChatFinishReason.Stop,

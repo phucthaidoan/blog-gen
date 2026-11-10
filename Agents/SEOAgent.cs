@@ -13,7 +13,7 @@ public class SEOAgent : BaseAgent, IAgent
     public string Description => Constants.Agents.SEO.Description;
 
     public SEOAgent(IChatClient chatClient, ILogger<SEOAgent> logger)
-        : base(chatClient, logger)
+        : base(chatClient, logger, name: Constants.Agents.SEO.Name, description: Constants.Agents.SEO.Description)
     {
     }
 

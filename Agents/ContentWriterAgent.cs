@@ -13,7 +13,7 @@ public class ContentWriterAgent : BaseAgent, IAgent
     public string Description => Constants.Agents.ContentWriter.Description;
 
     public ContentWriterAgent(IChatClient chatClient, ILogger<ContentWriterAgent> logger)
-        : base(chatClient, logger)
+        : base(chatClient, logger, name: Constants.Agents.ContentWriter.Name, description: Constants.Agents.ContentWriter.Description)
     {
     }
 

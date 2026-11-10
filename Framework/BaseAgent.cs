@@ -1,3 +1,4 @@
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -10,24 +11,25 @@ public abstract class BaseAgent
 {
     protected readonly IChatClient _chatClient;
     protected readonly ILogger _logger;
+    protected readonly AIAgent _agent;
 
-    protected BaseAgent(IChatClient chatClient, ILogger logger)
+    protected BaseAgent(IChatClient chatClient, ILogger logger, string? name = null, string? instructions = null, string? description = null)
     {
-        _chatClient = chatClient;
-        _logger = logger;
+        _chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _agent = new ChatClientAgent(
+            chatClient: chatClient,
+            instructions: instructions,
+            name: name ?? GetType().Name,
+            description: description);
     }
 
     protected async Task<string> ExecutePromptAsync(string prompt, CancellationToken cancellationToken = default)
     {
         try
         {
-            var messages = new List<ChatMessage>
-            {
-                new(ChatRole.User, prompt)
-            };
-
-            var response = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-            return response.Message.Text ?? string.Empty;
+            var response = await _agent.RunAsync(prompt, cancellationToken: cancellationToken);
+            return response.Text ?? string.Empty;
         }
         catch (Exception ex)
         {
