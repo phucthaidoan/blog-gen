@@ -13,7 +13,7 @@ public class ResearchAgent : BaseAgent, IAgent
     public string Description => Constants.Agents.Research.Description;
 
     public ResearchAgent(IChatClient chatClient, ILogger<ResearchAgent> logger)
-        : base(chatClient, logger)
+        : base(chatClient, logger, name: Constants.Agents.Research.Name, description: Constants.Agents.Research.Description)
     {
     }
 

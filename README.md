@@ -12,8 +12,8 @@
 
 ## 🛠️ Tech Stack
 
-- **.NET 9.0** with **Microsoft Agent Framework**
-- **Microsoft.Extensions.AI** for AI integration
+- **.NET 10.0** with **Microsoft Agent Framework** (`Microsoft.Agents.AI` 1.28.0)
+- **Microsoft.Extensions.AI** (10.11.0) for AI integration
 - **Google Gemini** / **Azure OpenAI** / **OpenAI** / **Local Model** support
 - **Agent-based architecture** with dependency injection
 

@@ -13,7 +13,7 @@ public class EditorAgent : BaseAgent, IAgent
     public string Description => Constants.Agents.Editor.Description;
 
     public EditorAgent(IChatClient chatClient, ILogger<EditorAgent> logger)
-        : base(chatClient, logger)
+        : base(chatClient, logger, name: Constants.Agents.Editor.Name, description: Constants.Agents.Editor.Description)
     {
     }
 

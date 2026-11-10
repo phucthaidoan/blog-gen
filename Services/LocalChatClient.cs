@@ -29,8 +29,8 @@ public class LocalChatClient : IChatClient
 
     public ChatClientMetadata Metadata => new("Local", new Uri(_baseUrl), _modelName);
 
-    public async Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages, 
+    public async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> chatMessages, 
         ChatOptions? options = null, 
         CancellationToken cancellationToken = default)
     {
@@ -51,26 +51,26 @@ public class LocalChatClient : IChatClient
         var responseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
         var localResponse = JsonSerializer.Deserialize<LocalResponse>(responseContent, _jsonOptions);
 
-        return ConvertToChatCompletion(localResponse, options);
+        return ConvertToChatResponse(localResponse, options);
     }
 
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages, 
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> chatMessages, 
         ChatOptions? options = null, 
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // For simplicity, we'll implement streaming by calling the non-streaming method
         // and yielding the result as a single update. A full implementation would use
         // the streaming endpoint with stream=true parameter.
-        var response = await CompleteAsync(chatMessages, options, cancellationToken);
+        var response = await GetResponseAsync(chatMessages, options, cancellationToken);
         
-        yield return new StreamingChatCompletionUpdate
+        yield return new ChatResponseUpdate
         {
-            CompletionId = response.CompletionId,
+            ResponseId = response.ResponseId,
             CreatedAt = response.CreatedAt,
             FinishReason = response.FinishReason,
-            Contents = response.Message.Contents,
-            Role = response.Message.Role,
+            Contents = response.Messages.FirstOrDefault()?.Contents ?? [],
+            Role = response.Messages.FirstOrDefault()?.Role,
             ModelId = response.ModelId,
             RawRepresentation = response.RawRepresentation
         };
@@ -150,7 +150,7 @@ public class LocalChatClient : IChatClient
         };
     }
 
-    private ChatCompletion ConvertToChatCompletion(LocalResponse? localResponse, ChatOptions? options)
+    private ChatResponse ConvertToChatResponse(LocalResponse? localResponse, ChatOptions? options)
     {
         if (localResponse?.Choices?.FirstOrDefault()?.Message?.Content is not string text)
         {
@@ -166,9 +166,9 @@ public class LocalChatClient : IChatClient
             TotalTokenCount = localResponse.Usage?.TotalTokens
         };
 
-        return new ChatCompletion(message)
+        return new ChatResponse(message)
         {
-            CompletionId = localResponse.Id ?? Guid.NewGuid().ToString(),
+            ResponseId = localResponse.Id ?? Guid.NewGuid().ToString(),
             CreatedAt = DateTimeOffset.UtcNow,
             ModelId = localResponse.Model ?? _modelName,
             FinishReason = ConvertFinishReason(localResponse.Choices?.FirstOrDefault()?.FinishReason),
