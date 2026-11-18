@@ -1,0 +1,20 @@
+{
+  "title": "AI-Native SDLC Playbook: Rewiring Your Engineering Pipeline",
+  "metaDescription": "Discover how to transition from AI-assisted coding to an AI-native SDLC. Learn how embedded AI agents optimize planning, coding, and quality across your pipeline.",
+  "tags": [
+    "AI SDLC playbook",
+    "AI-native software development",
+    "SDLC automation",
+    "AI coding assistants",
+    "software engineering",
+    "DevOps",
+    "AI code generation",
+    "pipeline optimization"
+  ],
+  "summary": "This blog post explores the transition from episodic \"AI-assisted\" coding to an fully integrated \"AI-native\" software development lifecycle (SDLC). It outlines how embedding AI agents natively into planning, requirements gathering, and coding phases helps resolve the Productivity versus Quality Paradox. Ultimately, it provides a blueprint for turning developers into air traffic controllers for autonomous AI systems.",
+  "suggestions": [
+    "Add sections covering Phase 3 (Testing & CI/CD) and Phase 4 (Deployment & Monitoring) to complete the full SDLC pipeline journey promised in the introduction.",
+    "Include real-world metrics, case studies, or a visual diagram of the AI-native SDLC architecture to boost reader engagement and shareability.",
+    "Incorporate internal and external links to relevant articles on RAG, vector embeddings, and security frameworks like STRIDE."
+  ]
+}
